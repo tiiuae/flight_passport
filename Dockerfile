@@ -2,6 +2,7 @@ FROM --platform=linux/amd64 python:3.10-slim
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
+ENV PATH="/home/django/.local/bin:${PATH}"
 
 WORKDIR /app
 
