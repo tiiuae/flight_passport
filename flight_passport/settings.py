@@ -94,7 +94,7 @@ MIDDLEWARE = (
 CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ORIGIN_WHITELIST = [
-     os.environ.get("JWT_ISSUER_DOMAIN", "https://local.test:9000"),
+    os.environ.get("JWT_ISSUER_DOMAIN", "https://local.test:9000"),
 ]
 
 ROOT_URLCONF = "flight_passport.urls"
