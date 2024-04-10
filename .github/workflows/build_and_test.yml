@@ -53,5 +53,8 @@ jobs:
         docker ps --format '{{.Names}}'
     - name: Run unit tests on the container
       run: |
-        docker exec -i flight_passport-web-1 python -m pip install -r requirements_dev.txt
-        docker exec -i flight_passport-web-1 pytest
+        docker exec -i flight_passport_web-1 python -m pip install -r requirements_dev.txt
+        docker exec -i flight_passport_web-1 pytest
+    - name: Shut down the docker container
+      run: |
+        docker-compose down
