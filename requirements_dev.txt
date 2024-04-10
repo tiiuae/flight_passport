@@ -1,4 +1,7 @@
 -r requirements.txt
+pytest==7.4.0
+pytest-django==4.5.2
+pytest-cov==4.1.0
 pylint_django
 black
 isort
@@ -6,6 +9,3 @@ ruff
 bandit
 pre-commit
 codespell
-pytest==7.4.0
-pytest-django==4.5.2
-pytest-cov==4.1.0
