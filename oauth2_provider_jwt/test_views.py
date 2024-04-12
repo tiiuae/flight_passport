@@ -1,4 +1,5 @@
 import pytest
+import json
 from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
@@ -18,14 +19,14 @@ class Oauth2ProvideJWTTokenPOSTTests(APITestCase):
         data = {
             "grant_type": "invalid_grant_type",
         }
-        response = self.client.post(self.api_url, data, content_type="application/json")
+        response = self.client.post(self.api_url, data=json.dumps(data), content_type="application/json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json(), {"error": "unsupported_grant_type"})
 
     def test_token_view_post_invalid_client(self):
-        data = {"grant_type": "client_credentials", "client_id": "", "client_secret": ""}
-        response = self.client.post(self.api_url, data, content_type="application/json")
+        data = {"grant_type": "client_credentials"}
+        response = self.client.post(self.api_url, data=json.dumps(data), content_type="application/json")
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.json(), {"error": "invalid_client"})
