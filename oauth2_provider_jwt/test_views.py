@@ -23,13 +23,8 @@ class Oauth2ProvideJWTTokenPOSTTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json(), {"error": "unsupported_grant_type"})
 
-
     def test_token_view_post_invalid_client(self):
-        data = {
-    "grant_type": "client_credentials",
-    "client_id": "",
-    "client_secret":""
-}
+        data = {"grant_type": "client_credentials", "client_id": "", "client_secret": ""}
         response = self.client.post(self.api_url, data, content_type="application/json")
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
