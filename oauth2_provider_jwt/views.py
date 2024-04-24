@@ -1,7 +1,6 @@
 import ast
 import json
 import logging
-
 from urllib.parse import parse_qs, urlparse
 from django.http import HttpResponse
 from django.conf import settings
@@ -12,7 +11,7 @@ from oauth2_provider.http import OAuth2ResponseRedirect
 from oauth2_provider.models import AccessToken
 from oauth2_provider.settings import oauth2_settings
 from rest_framework import status
-from .utils import encode_jwt, generate_payload
+from oauth2_provider_jwt import utils
 
 # Create your views here.
 
@@ -25,6 +24,10 @@ class MissingIdAttribute(Exception):
 
 
 class IncorrectAudience(Exception):
+    pass
+
+
+class InvalidUUID(Exception):
     pass
 
 
@@ -49,7 +52,7 @@ class JWTAuthorizationView(views.AuthorizationView):
 
 
 class TokenView(views.TokenView):
-    def _get_access_token_jwt(self, request, content, uuid=None):
+    def _get_access_token_jwt(self, request, content):
         extra_data = {}
 
         issuer = settings.JWT_ISSUER_DOMAIN
@@ -103,13 +106,15 @@ class TokenView(views.TokenView):
             extra_data["sub"] = str(id_value)
 
         # Generate scopes for UUID
-        if uuid:
-            print("UUID: ", uuid)
-            print("Not implemented yet")
+        if "client_uuid" in request_params:
+            is_valid_uuid = utils.validate_uuid(request.POST["client_uuid"])
+            if not is_valid_uuid:
+                raise InvalidUUID()
+
             # current_scope = extra_data.get("scope", "")
             # uuid_based_scope = ["rabbitmq.read:*/gcs_001_*/*","rabbitmq.configure:*/gcs_001_*"]
             # extra_data["scope"] = [current_scope, uuid_based_scope]
-        payload = generate_payload(issuer, content["expires_in"], **extra_data)
+        payload = utils.generate_payload(issuer, content["expires_in"], **extra_data)
 
         if oauth2_settings.OIDC_RSA_PRIVATE_KEY:
             private_key_pem = str(oauth2_settings.OIDC_RSA_PRIVATE_KEY).encode("utf8")
@@ -121,7 +126,7 @@ class TokenView(views.TokenView):
 
         headers = {"kid": kid}
 
-        token = encode_jwt(payload, headers=headers)
+        token = utils.encode_jwt(payload, headers=headers)
 
         return token
 
@@ -152,7 +157,7 @@ class TokenView(views.TokenView):
             return response
 
         try:
-            token_raw = self._get_access_token_jwt(request, content)
+            token_raw = self._get_access_token_jwt(request=request, content=content)
             if not isinstance(token_raw, str):
                 token_raw = token_raw.decode("utf-8")
             content["access_token"] = token_raw
@@ -183,6 +188,31 @@ class TokenView(views.TokenView):
                 content_type="application/json",
             )
 
+        except InvalidUUID:
+            error_message = json.dumps(
+                {
+                    "error": "invalid_request",
+                    "error_description": "Invalid UUID. " "Please set the appropriate UUID in the request.",
+                }
+            )
+            return HttpResponse(
+                json.dumps(error_message),
+                status=status.HTTP_400_BAD_REQUEST,
+                content_type="application/json",
+            )
+
+        except Exception:
+            error_message = json.dumps(
+                {
+                    "error": "unhandled_server_exception",
+                    "error_description": "Unhandled server exception. Please contact the server administrator.",
+                }
+            )
+            return HttpResponse(
+                json.dumps(error_message),
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content_type="application/json",
+            )
         content = json.dumps(content)
 
         return HttpResponse(content, status=response.status_code, content_type="application/json")

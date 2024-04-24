@@ -11,7 +11,12 @@ auth_value = f"{client_id}:{client_secret}"
 auth_value_bytes = auth_value.encode("ascii")
 auth_value_b64 = base64.b64encode(auth_value_bytes).decode("ascii")
 
-data = {"grant_type": "client_credentials", "scope": "blender.read blender.write", "audience": "blender.utm.dev.airoplatform.com"}
+data = {
+    "grant_type": "client_credentials",
+    "scope": "blender.read blender.write",
+    "audience": "blender.utm.dev.airoplatform.com",
+    "client_uuid": "f4b3",
+}
 
 headers = {"Authorization": f"Basic {auth_value_b64}", "Content-Type": "application/x-www-form-urlencoded"}
 
