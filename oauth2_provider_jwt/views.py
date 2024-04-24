@@ -9,7 +9,7 @@ from django.utils.module_loading import import_string
 from jwcrypto import jwk
 from oauth2_provider import views
 from oauth2_provider.http import OAuth2ResponseRedirect
-from oauth2_provider.models import get_access_token_model
+from oauth2_provider.models import AccessToken
 from oauth2_provider.settings import oauth2_settings
 from rest_framework import status
 from .utils import encode_jwt, generate_payload
@@ -49,14 +49,14 @@ class JWTAuthorizationView(views.AuthorizationView):
 
 
 class TokenView(views.TokenView):
-    def _get_access_token_jwt(self, request, content):
+    def _get_access_token_jwt(self, request, content,uuid=None):
         extra_data = {}
 
         issuer = settings.JWT_ISSUER_DOMAIN
         payload_enricher = getattr(settings, "JWT_PAYLOAD_ENRICHER", None)
         request_params = list(request.POST.keys())
 
-        token = get_access_token_model().objects.get(token=content["access_token"])
+        token = AccessToken.objects.get(token=content["access_token"])
         if payload_enricher:
             fn = import_string(payload_enricher)
             extra_data = fn(request)
@@ -73,8 +73,8 @@ class TokenView(views.TokenView):
                 assert requested_audience in all_audience
             except AssertionError:
                 raise IncorrectAudience()
-            else:
-                extra_data["aud"] = requested_audience
+            
+            extra_data["aud"] = requested_audience
 
         if "flight_plan_id" in request_params:
             flight_plan_id = request.POST["flight_plan_id"]
@@ -102,10 +102,18 @@ class TokenView(views.TokenView):
 
             extra_data["sub"] = str(id_value)
 
+        #Generate scopes for UUID
+        if uuid:
+            print("UUID: ",uuid)
+            print("Not implemented yet")
+            # current_scope = extra_data.get("scope", "")
+            # uuid_based_scope = ["rabbitmq.read:*/gcs_001_*/*","rabbitmq.configure:*/gcs_001_*"]
+            # extra_data["scope"] = [current_scope, uuid_based_scope]
         payload = generate_payload(issuer, content["expires_in"], **extra_data)
 
         if oauth2_settings.OIDC_RSA_PRIVATE_KEY:
-            key = jwk.JWK.from_pem(oauth2_settings.OIDC_RSA_PRIVATE_KEY.encode("utf8"))
+            private_key_pem = str(oauth2_settings.OIDC_RSA_PRIVATE_KEY).encode("utf8")
+            key = jwk.JWK.from_pem(private_key_pem)
             kid = key.thumbprint()
 
         else:
@@ -129,6 +137,7 @@ class TokenView(views.TokenView):
             return False
 
     def post(self, request, *args, **kwargs) -> HttpResponse:
+
         response = super(TokenView, self).post(request, *args, **kwargs)
 
         content = ast.literal_eval(response.content.decode("utf-8"))
