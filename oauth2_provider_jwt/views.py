@@ -49,7 +49,7 @@ class JWTAuthorizationView(views.AuthorizationView):
 
 
 class TokenView(views.TokenView):
-    def _get_access_token_jwt(self, request, content,uuid=None):
+    def _get_access_token_jwt(self, request, content, uuid=None):
         extra_data = {}
 
         issuer = settings.JWT_ISSUER_DOMAIN
@@ -73,7 +73,7 @@ class TokenView(views.TokenView):
                 assert requested_audience in all_audience
             except AssertionError:
                 raise IncorrectAudience()
-            
+
             extra_data["aud"] = requested_audience
 
         if "flight_plan_id" in request_params:
@@ -102,9 +102,9 @@ class TokenView(views.TokenView):
 
             extra_data["sub"] = str(id_value)
 
-        #Generate scopes for UUID
+        # Generate scopes for UUID
         if uuid:
-            print("UUID: ",uuid)
+            print("UUID: ", uuid)
             print("Not implemented yet")
             # current_scope = extra_data.get("scope", "")
             # uuid_based_scope = ["rabbitmq.read:*/gcs_001_*/*","rabbitmq.configure:*/gcs_001_*"]
@@ -137,41 +137,52 @@ class TokenView(views.TokenView):
             return False
 
     def post(self, request, *args, **kwargs) -> HttpResponse:
-
         response = super(TokenView, self).post(request, *args, **kwargs)
 
         content = ast.literal_eval(response.content.decode("utf-8"))
         request.POST.get("grant_type")
         # Per the ASTM standards on UTM only the 'client_credentials' grant must be a JWT
-        if response.status_code == status.HTTP_200_OK and "access_token" in content:
-            if not TokenView._is_jwt_config_set():
-                logger.warning("Missing JWT configuration, skipping token build")
-            else:
-                try:
-                    token_raw = self._get_access_token_jwt(request, content)
-                    if not isinstance(token_raw, str):
-                        token_raw = token_raw.decode("utf-8")
-                    content["access_token"] = token_raw
 
-                except MissingIdAttribute:
-                    response.status_code = status.HTTP_400_BAD_REQUEST
-                    response.content = json.dumps(
-                        {
-                            "error": "invalid_request",
-                            "error_description": "App not configured correctly. " "Please set JWT_ID_ATTRIBUTE.",
-                        }
-                    )
+        if response.status_code != status.HTTP_200_OK and "access_token" not in content:
+            logger.error("Error in token generation")
+            return response
 
-                except IncorrectAudience:
-                    response.status_code = status.HTTP_400_BAD_REQUEST
-                    response.content = json.dumps(
-                        {
-                            "error": "invalid_request",
-                            "error_description": "Incorrect Audience. " "Please set the appropriate audience in the request.",
-                        }
-                    )
-                else:
-                    content = json.dumps(content)
-                    response.content = content
+        if not TokenView._is_jwt_config_set():
+            logger.warning("Missing JWT configuration, skipping token build")
+            return response
 
-        return response
+        try:
+            token_raw = self._get_access_token_jwt(request, content)
+            if not isinstance(token_raw, str):
+                token_raw = token_raw.decode("utf-8")
+            content["access_token"] = token_raw
+
+        except MissingIdAttribute:
+            error_message = json.dumps(
+                {
+                    "error": "invalid_request",
+                    "error_description": "App not configured correctly. " "Please set JWT_ID_ATTRIBUTE.",
+                }
+            )
+            return HttpResponse(
+                json.dumps(error_message),
+                status=status.HTTP_400_BAD_REQUEST,
+                content_type="application/json",
+            )
+
+        except IncorrectAudience:
+            error_message = json.dumps(
+                {
+                    "error": "invalid_request",
+                    "error_description": "Incorrect Audience. " "Please set the appropriate audience in the request.",
+                }
+            )
+            return HttpResponse(
+                json.dumps(error_message),
+                status=status.HTTP_400_BAD_REQUEST,
+                content_type="application/json",
+            )
+
+        content = json.dumps(content)
+
+        return HttpResponse(content, status=response.status_code, content_type="application/json")
