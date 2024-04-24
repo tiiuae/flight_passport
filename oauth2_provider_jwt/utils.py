@@ -1,7 +1,7 @@
 import base64
 import json
 from datetime import datetime, timedelta
-
+from uuid import UUID
 import jwt
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -97,3 +97,11 @@ def decode_jwt_user_info(jwt_value):
 
     decoded = jwt.decode(jwt_value, public_key_pem, algorithms=algorithms)
     return decoded
+
+
+def validate_uuid(uuid_string: str) -> bool:
+    try:
+        UUID(uuid_string, version=4)
+    except ValueError:
+        return False
+    return True
