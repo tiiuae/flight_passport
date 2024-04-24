@@ -15,7 +15,7 @@ data = {
     "grant_type": "client_credentials",
     "scope": "blender.read blender.write",
     "audience": "blender.utm.dev.airoplatform.com",
-    "client_uuid": "f4b3",
+    "client_uuid": "e28163ce-b86d-4145-8df3-c8dad2e0b601",
 }
 
 headers = {"Authorization": f"Basic {auth_value_b64}", "Content-Type": "application/x-www-form-urlencoded"}

@@ -12,6 +12,7 @@ from oauth2_provider.models import AccessToken
 from oauth2_provider.settings import oauth2_settings
 from rest_framework import status
 from oauth2_provider_jwt import utils
+import os
 
 # Create your views here.
 
@@ -107,13 +108,18 @@ class TokenView(views.TokenView):
 
         # Generate scopes for UUID
         if "client_uuid" in request_params:
-            is_valid_uuid = utils.validate_uuid(request.POST["client_uuid"])
+            client_uuid = request.POST["client_uuid"]
+            is_valid_uuid = utils.validate_uuid(client_uuid)
             if not is_valid_uuid:
                 raise InvalidUUID()
 
-            # current_scope = extra_data.get("scope", "")
-            # uuid_based_scope = ["rabbitmq.read:*/gcs_001_*/*","rabbitmq.configure:*/gcs_001_*"]
-            # extra_data["scope"] = [current_scope, uuid_based_scope]
+            current_scope = extra_data.get("scope", "")
+            rabbitmq_audience = os.environ.get("RABBITMQ_SERVER_AUDIENCE", "")
+            uuid_based_scope = [f"{rabbitmq_audience}.read:*/{client_uuid}_*/*", f"{rabbitmq_audience}.configure:*/{client_uuid}_*"]
+            extra_data["scope"] = [current_scope] + uuid_based_scope
+
+            current_audience = extra_data.get("aud", "")
+            extra_data["audience"] = [current_audience] + [rabbitmq_audience]
         payload = utils.generate_payload(issuer, content["expires_in"], **extra_data)
 
         if oauth2_settings.OIDC_RSA_PRIVATE_KEY:
