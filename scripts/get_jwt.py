@@ -1,5 +1,6 @@
-import requests
 import base64
+
+import requests
 
 url = "http://localhost:9000/oauth/token/"
 

@@ -2,6 +2,7 @@ import base64
 import json
 from datetime import datetime, timedelta
 from uuid import UUID
+
 import jwt
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured

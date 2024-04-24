@@ -1,9 +1,11 @@
 import ast
 import json
 import logging
+import os
 from urllib.parse import parse_qs, urlparse
-from django.http import HttpResponse
+
 from django.conf import settings
+from django.http import HttpResponse
 from django.utils.module_loading import import_string
 from jwcrypto import jwk
 from oauth2_provider import views
@@ -11,8 +13,8 @@ from oauth2_provider.http import OAuth2ResponseRedirect
 from oauth2_provider.models import AccessToken
 from oauth2_provider.settings import oauth2_settings
 from rest_framework import status
+
 from oauth2_provider_jwt import utils
-import os
 
 # Create your views here.
 
