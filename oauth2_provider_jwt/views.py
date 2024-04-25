@@ -68,7 +68,7 @@ class TokenView(views.TokenView):
             extra_data = fn(request)
 
         if "scope" in content:
-            extra_data["scope"] = content["scope"]
+            extra_data["scope"] = content["scope"].split()
             extra_data["typ"] = "Bearer"
 
         if "audience" in request_params:
@@ -115,13 +115,15 @@ class TokenView(views.TokenView):
             if not is_valid_uuid:
                 raise InvalidUUID()
 
-            current_scope = extra_data.get("scope", "")
+            current_scope = extra_data.get("scope", [])
             rabbitmq_audience = os.environ.get("RABBITMQ_SERVER_AUDIENCE", "")
-            uuid_based_scope = [f"{rabbitmq_audience}.read:*/{client_uuid}_*/*", f"{rabbitmq_audience}.configure:*/{client_uuid}_*"]
-            extra_data["scope"] = [current_scope] + uuid_based_scope
+            if rabbitmq_audience:
+                uuid_based_read_scope = f"{rabbitmq_audience}.read:*/{client_uuid}_*/*"
+                uuid_based_configure_scope = f"{rabbitmq_audience}.configure:*/{client_uuid}_*"
+                extra_data["scope"] = current_scope + [uuid_based_read_scope, uuid_based_configure_scope]
 
             current_audience = extra_data.get("aud", "")
-            extra_data["audience"] = [current_audience] + [rabbitmq_audience]
+            extra_data["audience"] = [aud for aud in [current_audience, rabbitmq_audience] if aud]
         payload = utils.generate_payload(issuer, content["expires_in"], **extra_data)
 
         if oauth2_settings.OIDC_RSA_PRIVATE_KEY:
