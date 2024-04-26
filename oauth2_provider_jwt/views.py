@@ -202,7 +202,7 @@ class TokenView(views.TokenView):
             error_message = json.dumps(
                 {
                     "error": "invalid_request",
-                    "error_description": "Invalid UUID. " "Please set the appropriate UUID in the request.",
+                    "error_description": "Invalid UUID. Please set the appropriate UUID in the request.",
                 }
             )
             return HttpResponse(
