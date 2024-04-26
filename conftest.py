@@ -29,10 +29,13 @@ def create_new_passport_application(db):
         client_secret=client_secret,
     )
     app.audience.add(api)
-    env.setdefault("UNIT_TEST_CLIENT_ID", client_id)
-    env.setdefault("UNIT_TEST_CLIENT_SECRET", client_secret)
 
+    env["UNIT_TEST_CLIENT_ID"] = client_id
+    env["UNIT_TEST_CLIENT_SECRET"] = client_secret
     yield
     auth_profile_models.PassportScope.objects.all().delete()
     auth_profile_models.PassportAPI.objects.all().delete()
     auth_profile_models.PassportApplication.objects.all().delete()
+
+    env["UNIT_TEST_CLIENT_ID"] = ""
+    env["UNIT_TEST_CLIENT_SECRET"] = ""
