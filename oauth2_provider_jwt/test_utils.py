@@ -1,4 +1,3 @@
-import pytest
 from django.test import TestCase
 
 from oauth2_provider_jwt.utils import validate_uuid
