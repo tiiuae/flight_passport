@@ -45,9 +45,9 @@ if issuer_domain:
     CORS_ORIGIN_WHITELIST = [issuer_domain]
 
 if DEBUG:
-    ALLOWED_HOSTS.append('localhost')
-    CSRF_TRUSTED_ORIGINS.append('http://localhost:9000')
-    CORS_ORIGIN_WHITELIST.append('http://localhost:9000')
+    ALLOWED_HOSTS.append("localhost")
+    CSRF_TRUSTED_ORIGINS.append("http://localhost:9000")
+    CORS_ORIGIN_WHITELIST.append("http://localhost:9000")
 
 # Application definition
 
