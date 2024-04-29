@@ -36,7 +36,6 @@ if int(debug_mode):
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = ["*"]
 
 issuer_domain = os.environ.get("JWT_ISSUER_DOMAIN", None)
 if issuer_domain:
@@ -45,6 +44,10 @@ if issuer_domain:
     CSRF_TRUSTED_ORIGINS = [issuer_domain]
     CORS_ORIGIN_WHITELIST = [issuer_domain]
 
+if DEBUG:
+    ALLOWED_HOSTS.append('localhost')
+    CSRF_TRUSTED_ORIGINS.append('http://localhost:9000')
+    CORS_ORIGIN_WHITELIST.append('http://localhost:9000')
 
 # Application definition
 
