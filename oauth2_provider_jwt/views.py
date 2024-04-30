@@ -3,7 +3,6 @@ import json
 import logging
 import os
 from urllib.parse import parse_qs, urlparse
-
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils.module_loading import import_string
@@ -123,7 +122,8 @@ class TokenView(views.TokenView):
                 extra_data["scope"] = current_scope + [uuid_based_read_scope, uuid_based_configure_scope]
 
             current_audience = extra_data.get("aud", "")
-            extra_data["audience"] = [aud for aud in [current_audience, rabbitmq_audience] if aud]
+            extra_data["aud"] = [aud for aud in [current_audience, rabbitmq_audience] if aud]
+        
         payload = utils.generate_payload(issuer, content["expires_in"], **extra_data)
 
         if oauth2_settings.OIDC_RSA_PRIVATE_KEY:
@@ -135,7 +135,6 @@ class TokenView(views.TokenView):
             kid = "e28163ce-b86d-4145-8df3-c8dad2e0b601"
 
         headers = {"kid": kid}
-
         token = utils.encode_jwt(payload, headers=headers)
 
         return token
