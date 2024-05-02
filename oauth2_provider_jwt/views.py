@@ -123,7 +123,7 @@ class TokenView(views.TokenView):
 
             current_audience = extra_data.get("aud", "")
             extra_data["aud"] = [aud for aud in [current_audience, rabbitmq_audience] if aud]
-        
+
         payload = utils.generate_payload(issuer, content["expires_in"], **extra_data)
 
         if oauth2_settings.OIDC_RSA_PRIVATE_KEY:
