@@ -1,7 +1,9 @@
 #!/bin/bash
 
+DB_SERVICE="${DB_HOST:-db-passport}:${DB_PORT:-5432}"
+
 echo Waiting for DBs...
-if ! wait-for-it --service db-passport:5432; then
+if ! wait-for-it --service $DB_SERVICE; then
     exit
 fi
 
