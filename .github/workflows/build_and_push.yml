@@ -6,7 +6,7 @@ on:
     tags:
       - v*
 env:
-  IMAGE_NAME: ghcr.io/tiiuae/flight_passport
+  IMAGE_NAME: ghcr.io/tiiuae/flight_passport_tii
 jobs:
   build-docker-image:
     permissions:
@@ -28,7 +28,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v4
       with:
-        images: ghcr.io/tiiuae/flight_passport
+        images: ghcr.io/tiiuae/flight_passport_tii
         tags: |
           type=ref,event=branch
           type=ref,event=pr
