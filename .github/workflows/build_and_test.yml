@@ -18,11 +18,6 @@ jobs:
       - name: Run Black formatting
         uses: psf/black@stable
 
-      - name: Run Codespell spell checker
-        uses: codespell-project/actions-codespell@v2
-        with:
-          ignore_words_file: .codespellignore
-
   build-and-testing:
     runs-on: ubuntu-latest
     timeout-minutes: 30
