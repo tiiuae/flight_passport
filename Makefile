@@ -10,7 +10,7 @@ cleanimports:
 
 # Run tests
 testprep:
-	docker exec -it flight_passport-web-1 python -m pip install --upgrade -r requirements_dev.txt
+	docker exec -it flight_passport_tii-web-1 python -m pip install --upgrade -r requirements_dev.txt
 
 test: testprep
-	docker exec -it flight_passport-web-1 pytest
+	docker exec -it flight_passport_tii-web-1 pytest
