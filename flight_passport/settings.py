@@ -36,15 +36,23 @@ if int(debug_mode):
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = ["*"]
+
+ALLOWED_HOSTS = []
+CSRF_TRUSTED_ORIGINS = []
+CORS_ORIGIN_WHITELIST = []
 
 issuer_domain = os.environ.get("JWT_ISSUER_DOMAIN", None)
 if issuer_domain:
     d = urlparse(issuer_domain).hostname
-    ALLOWED_HOSTS = [d]
+    if d is not None:
+        ALLOWED_HOSTS.append(d)
     CSRF_TRUSTED_ORIGINS = [issuer_domain]
     CORS_ORIGIN_WHITELIST = [issuer_domain]
 
+if DEBUG:
+    ALLOWED_HOSTS.append("localhost")
+    CSRF_TRUSTED_ORIGINS.append("http://localhost:9000")
+    CORS_ORIGIN_WHITELIST.append("http://localhost:9000")
 
 # Application definition
 
@@ -211,7 +219,6 @@ USE_TZ = True
 STATIC_URL = "/static/"
 OAUTH2_PROVIDER_APPLICATION_MODEL = "authprofiles.PassportApplication"
 OAUTH2_PROVIDER = {
-    "OAUTH2_BACKEND_CLASS": "oauth2_provider.oauth2_backends.JSONOAuthLibCore",
     "OIDC_ENABLED": True,
     "PKCE_REQUIRED": os.environ.get("PKCE_ENABLED", False),
     "OIDC_RSA_PRIVATE_KEY": os.environ.get("OIDC_RSA_PRIVATE_KEY"),
