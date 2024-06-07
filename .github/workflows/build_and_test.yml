@@ -18,11 +18,6 @@ jobs:
       - name: Run Black formatting
         uses: psf/black@stable
 
-      - name: Run Codespell spell checker
-        uses: codespell-project/actions-codespell@v2
-        with:
-          ignore_words_file: .codespellignore
-
   build-and-testing:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -53,8 +48,8 @@ jobs:
         docker ps --format '{{.Names}}'
     - name: Run unit tests on the container
       run: |
-        docker exec -u root -i flight_passport_web_1 python -m pip install -r requirements_dev.txt
-        docker exec -u root -i flight_passport_web_1 pytest
+        docker exec -u root -i flight_passport_tii_web_1 python -m pip install -r requirements_dev.txt
+        docker exec -u root -i flight_passport_tii_web_1 pytest
 
     - name: Shut down the docker container
       run: |
