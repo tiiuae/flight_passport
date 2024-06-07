@@ -37,6 +37,10 @@ else:
     DEBUG = False
 
 
+ALLOWED_HOSTS = []
+CSRF_TRUSTED_ORIGINS = []
+CORS_ORIGIN_WHITELIST = []
+
 issuer_domain = os.environ.get("JWT_ISSUER_DOMAIN", None)
 if issuer_domain:
     d = urlparse(issuer_domain).hostname
